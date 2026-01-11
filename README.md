@@ -62,8 +62,8 @@ This is a modern full-stack web application designed as a chat interface for Ope
     pnpm dev
     ```
 
-    -   Web: http://localhost:3000
-    -   API: http://localhost:3001
+    -   Web: http://localhost:3001
+    -   API: http://localhost:3000
     -   Jaeger UI: http://localhost:16686
 
 ## Testing

@@ -7,7 +7,7 @@ import { initTelemetry } from "./instrumentation";
 initTelemetry();
 
 const app: Express = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(morgan("dev"));
