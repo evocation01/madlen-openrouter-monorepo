@@ -11,6 +11,9 @@ import { prisma, MessageRole } from "@repo/database";
 // Initialize OpenTelemetry before everything else
 initTelemetry();
 
+console.log("API Starting...");
+console.log("DATABASE_URL present:", !!process.env.DATABASE_URL);
+
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
@@ -86,7 +89,17 @@ app.post("/chat", authMiddleware, async (req: any, res: Response) => {
     // 3. Call OpenRouter
     const completion = await openRouterService.chat(messages, model);
     const assistantMessage = completion.choices[0]?.message;
-    const assistantMessageContent = assistantMessage?.content || "";
+    
+    // Check for refusal or empty content
+    let assistantMessageContent = assistantMessage?.content || "";
+    if (!assistantMessageContent && assistantMessage?.refusal) {
+        assistantMessageContent = `[Refusal]: ${assistantMessage.refusal}`;
+    }
+    
+    if (!assistantMessageContent.trim()) {
+        console.warn("OpenRouter returned empty content for model:", model);
+        assistantMessageContent = "[No response from model]";
+    }
 
     // 4. Save Assistant Message
     await prisma.message.create({
@@ -99,10 +112,15 @@ app.post("/chat", authMiddleware, async (req: any, res: Response) => {
 
     res.json({
       conversationId: conversation.id,
-      message: assistantMessage,
+      message: { ...assistantMessage, content: assistantMessageContent },
     });
   } catch (error) {
-    console.error("Chat error:", error);
+    console.error("Chat error details:", error);
+    // @ts-ignore
+    if (error.response) {
+        // @ts-ignore
+        console.error("OpenRouter API Response:", error.response.data);
+    }
     res.status(500).json({ error: "Failed to process chat" });
   }
 });
