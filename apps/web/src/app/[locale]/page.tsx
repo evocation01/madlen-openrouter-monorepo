@@ -1,25 +1,29 @@
-import { Button } from "@repo/ui/components/ui/button";
+import { ChatInterface } from "@/components/chat-interface";
+import { auth } from "@/auth";
 
 export default async function Home({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params; // Consume the promise to satisfy Next.js types if needed, though unused variable might trigger lint. 
-  // actually I can just not await it if I don't use it, but type definition requires Promise.
+  await params; // Consume promise
+  const session = await auth();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <Button variant="default" size="lg">
-            Click me (from @repo/ui)
-          </Button>
+    <main className="flex min-h-screen flex-col items-center justify-between p-4 md:p-24">
+      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm">
+        <div className="mb-8 flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Madlen OpenRouter</h1>
+          <div>
+            {session?.user ? (
+              <span>Welcome, {session.user.name || session.user.email}</span>
+            ) : (
+              <span>Not logged in</span>
+            )}
+          </div>
         </div>
+        
+        <ChatInterface />
       </div>
     </main>
   );
