@@ -19,3 +19,9 @@ export const prisma =
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+export enum MessageRole {
+  system = "system",
+  user = "user",
+  assistant = "assistant",
+}
