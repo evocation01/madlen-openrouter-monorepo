@@ -6,7 +6,8 @@ export const config = defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
-    setupFiles: [], // Add global setup files here if needed
+    setupFiles: [], 
+    exclude: ["**/node_modules/**", "**/dist/**", "**/.next/**"],
   },
 });
 
