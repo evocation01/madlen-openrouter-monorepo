@@ -78,7 +78,7 @@ model Message {
   id             String       @id @default(cuid())
   conversationId String
   role           MessageRole
-  content        String       @db.Text
+  content        Json
   createdAt      DateTime     @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }

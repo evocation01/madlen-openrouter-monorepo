@@ -19,7 +19,7 @@ app.use(cors({
   credentials: true, // Allow cookies
 }));
 app.use(morgan("dev"));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increase limit for images
 app.use(cookieParser());
 
 app.get("/health", (req, res) => {
@@ -41,8 +41,8 @@ app.post("/chat", authMiddleware, async (req: any, res: Response) => {
   const { messages, model, conversationId } = req.body;
   const user = req.user;
 
-  if (!messages || !model) {
-    res.status(400).json({ error: "Missing messages or model" });
+  if (!messages || !model || !Array.isArray(messages)) {
+    res.status(400).json({ error: "Missing or invalid messages or model" });
     return;
   }
 
@@ -58,10 +58,17 @@ app.post("/chat", authMiddleware, async (req: any, res: Response) => {
         return;
       }
     } else {
+      const firstMessage = messages[0];
+      const titleContent = typeof firstMessage?.content === 'string' 
+        ? firstMessage.content 
+        : Array.isArray(firstMessage?.content) 
+          ? firstMessage.content.find((c: any) => c.type === 'text')?.text || 'New Chat'
+          : 'New Chat';
+
       conversation = await prisma.conversation.create({
         data: {
           userId: user.id,
-          title: messages[0]?.content?.slice(0, 50) || "New Chat",
+          title: titleContent.slice(0, 50),
         },
       });
     }
@@ -72,26 +79,27 @@ app.post("/chat", authMiddleware, async (req: any, res: Response) => {
       data: {
         conversationId: conversation.id,
         role: MessageRole.user,
-        content: lastMessage.content,
+        content: lastMessage.content as any,
       },
     });
 
     // 3. Call OpenRouter
     const completion = await openRouterService.chat(messages, model);
-    const assistantMessageContent = completion.choices[0]?.message?.content || "";
+    const assistantMessage = completion.choices[0]?.message;
+    const assistantMessageContent = assistantMessage?.content || "";
 
     // 4. Save Assistant Message
     await prisma.message.create({
       data: {
         conversationId: conversation.id,
         role: MessageRole.assistant,
-        content: assistantMessageContent,
+        content: assistantMessageContent as any,
       },
     });
 
     res.json({
       conversationId: conversation.id,
-      message: completion.choices[0]?.message,
+      message: assistantMessage,
     });
   } catch (error) {
     console.error("Chat error:", error);
@@ -106,12 +114,6 @@ app.get("/history", authMiddleware, async (req: any, res: Response) => {
     const conversations = await prisma.conversation.findMany({
       where: { userId: user.id },
       orderBy: { updatedAt: "desc" },
-      include: {
-        messages: {
-          orderBy: { createdAt: "asc" },
-          take: 1, // Just get first message for preview/title if needed
-        },
-      },
     });
     res.json(conversations);
   } catch (error) {

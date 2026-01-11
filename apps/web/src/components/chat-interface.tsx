@@ -5,10 +5,20 @@ import { Button } from "@repo/ui/components/ui/button";
 import { Input } from "@repo/ui/components/ui/input";
 import { Textarea } from "@repo/ui/components/ui/textarea";
 import { useSession, signIn } from "next-auth/react";
+import { useIntlayer } from "next-intlayer";
+import { Plus, MessageSquare, History, ImageIcon, X } from "lucide-react";
+
+interface MessagePart {
+  type: "text" | "image_url";
+  text?: string;
+  image_url?: {
+    url: string;
+  };
+}
 
 interface Message {
   role: "user" | "assistant" | "system";
-  content: string;
+  content: string | MessagePart[];
 }
 
 interface Model {
@@ -16,21 +26,41 @@ interface Model {
   name: string;
 }
 
+interface Conversation {
+  id: string;
+  title: string;
+  createdAt: string;
+}
+
 const API_URL = "http://localhost:3000";
 
 export function ChatInterface() {
   const { data: session, status } = useSession();
+  const content = useIntlayer("chat");
+  
+  // Chat State
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [models, setModels] = useState<Model[]>([]);
-  const [selectedModel, setSelectedModel] = useState("openai/gpt-3.5-turbo");
+  const [history, setHistory] = useState<Conversation[]>([]);
+  const [selectedModel, setSelectedModel] = useState("meta-llama/llama-3-8b-instruct:free");
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
+  // Login State
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (status === "authenticated") {
       fetchModels();
+      fetchHistory();
     }
   }, [status]);
 
@@ -42,35 +72,108 @@ export function ChatInterface() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleLogin = async () => {
+    setIsLoggingIn(true);
+    setLoginError("");
+    try {
+      const result = await signIn("credentials", { 
+        email, 
+        password, 
+        redirect: false 
+      });
+      
+      if (result?.error) {
+        setLoginError("Invalid email or password");
+      }
+    } catch (error) {
+      setLoginError("Login failed");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
   const fetchModels = async () => {
     try {
-      // For now, hardcode some free models if API fetch fails or for speed
       const freeModels = [
-        { id: "openai/gpt-3.5-turbo", name: "GPT-3.5 Turbo" },
-        { id: "google/gemini-pro", name: "Gemini Pro" },
         { id: "meta-llama/llama-3-8b-instruct:free", name: "Llama 3 8B (Free)" },
+        { id: "google/gemini-flash-1.5-exp:free", name: "Gemini Flash 1.5 (Free)" },
+        { id: "mistralai/mistral-7b-instruct:free", name: "Mistral 7B (Free)" },
+        { id: "openai/gpt-4o-mini", name: "GPT-4o Mini (Multimodal)" },
       ];
       setModels(freeModels);
-
-      // Uncomment when API is fully ready with CORS
-      /*
-      const res = await fetch(`${API_URL}/models`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (data.data) setModels(data.data);
-      */
     } catch (e) {
       console.error("Failed to fetch models", e);
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch(`${API_URL}/history`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch history", e);
+    }
+  };
 
-    const userMessage: Message = { role: "user", content: input };
-    setMessages((prev) => [...prev, userMessage]);
+  const loadConversation = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/history/${id}`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages(data.messages);
+        setConversationId(data.id);
+      }
+    } catch (e) {
+      console.error("Failed to load conversation", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNewChat = () => {
+    setMessages([]);
+    setConversationId(null);
     setInput("");
+    setSelectedImage(null);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!input.trim() && !selectedImage) return;
+    if (isLoading) return;
+
+    let userContent: string | MessagePart[] = input;
+    
+    if (selectedImage) {
+      userContent = [
+        { type: "text", text: input },
+        { type: "image_url", image_url: { url: selectedImage } }
+      ];
+    }
+
+    const userMessage: Message = { role: "user", content: userContent };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setInput("");
+    setSelectedImage(null);
     setIsLoading(true);
 
     try {
@@ -79,9 +182,9 @@ export function ChatInterface() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // Send Auth.js cookies
+        credentials: "include",
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: newMessages,
           model: selectedModel,
           conversationId,
         }),
@@ -96,7 +199,10 @@ export function ChatInterface() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-      if (data.conversationId) setConversationId(data.conversationId);
+      if (data.conversationId && !conversationId) {
+        setConversationId(data.conversationId);
+        fetchHistory();
+      }
     } catch (error) {
       console.error(error);
       setMessages((prev) => [
@@ -108,93 +214,225 @@ export function ChatInterface() {
     }
   };
 
-  if (status === "loading") return <div>Loading...</div>;
+  const renderMessageContent = (content: string | MessagePart[]) => {
+    if (typeof content === 'string') return content;
+    
+    return (
+      <div className="space-y-2">
+        {content.map((part, i) => (
+          <div key={i}>
+            {part.type === 'text' && part.text}
+            {part.type === 'image_url' && (
+              <img 
+                src={part.image_url?.url} 
+                alt="Uploaded" 
+                className="max-w-full h-auto rounded-lg border bg-white"
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  if (status === "loading") return <div className="p-8 text-center">Loading...</div>;
 
   if (status === "unauthenticated") {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
-        <p>Please sign in to chat.</p>
-        <Button onClick={() => signIn()}>Sign In</Button>
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-4 border rounded-xl bg-card shadow-sm p-8 max-w-md mx-auto mt-10">
+        <h2 className="text-xl font-bold">{content.signInRequired.value}</h2>
+        
+        <div className="flex flex-col gap-4 w-full">
+          <Input 
+            type="email"
+            placeholder="Email (test@example.com)" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Input 
+            type="password"
+            placeholder="Password (password123)" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+          />
+          {loginError && (
+            <p className="text-destructive text-sm">{loginError}</p>
+          )}
+          <Button onClick={handleLogin} disabled={isLoggingIn} className="w-full">
+            {isLoggingIn ? "Signing In..." : content.signInButton.value}
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] w-full max-w-4xl mx-auto p-4 border rounded-lg shadow-sm bg-background">
-      {/* Header / Model Selector */}
-      <div className="flex justify-between items-center mb-4 pb-4 border-b">
-        <h2 className="text-lg font-semibold">Madlen Chat</h2>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium">Model:</label>
-          <select
-            className="p-2 border rounded-md text-sm bg-background"
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
-          >
-            {models.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
+    <div className="flex h-full w-full gap-4">
+      {/* Sidebar */}
+      <div className="w-64 flex flex-col gap-2 border rounded-xl p-3 bg-muted/30 backdrop-blur-sm">
+        <Button 
+          variant="outline" 
+          className="w-full justify-start gap-2 mb-2 bg-background shadow-sm" 
+          onClick={handleNewChat}
+        >
+          <Plus className="w-4 h-4" />
+          {content.newChatButton.value}
+        </Button>
+        
+        <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+          <History className="w-3 h-3" />
+          {content.historyTitle.value}
+        </div>
+        
+        <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+          {history.length === 0 ? (
+            <div className="text-xs text-center text-muted-foreground p-4">No history yet</div>
+          ) : (
+            history.map((chat) => (
+              <button
+                key={chat.id}
+                onClick={() => loadConversation(chat.id)}
+                className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all hover:bg-accent hover:text-accent-foreground flex items-center gap-2 truncate group ${
+                  conversationId === chat.id ? "bg-accent text-accent-foreground shadow-sm font-medium" : "text-muted-foreground"
+                }`}
+              >
+                <MessageSquare className={`w-4 h-4 shrink-0 transition-opacity ${conversationId === chat.id ? "opacity-100" : "opacity-50 group-hover:opacity-100"}`} />
+                <span className="truncate">{chat.title || "Untitled Chat"}</span>
+              </button>
+            ))
+          )}
         </div>
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto mb-4 space-y-4 p-2">
-        {messages.length === 0 && (
-          <div className="text-center text-muted-foreground mt-10">
-            Start a conversation...
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col border rounded-xl shadow-md bg-card overflow-hidden">
+        {/* Header */}
+        <div className="flex justify-between items-center px-6 py-4 border-b bg-card/50 backdrop-blur-md">
+          <h2 className="font-bold text-base md:text-lg">{content.title.value}</h2>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-muted-foreground hidden sm:block">{content.modelLabel.value}</span>
+            <select
+              className="p-2 border rounded-lg text-xs bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all cursor-pointer hover:border-muted-foreground/50 shadow-sm"
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+            >
+              {models.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`flex ${
-              msg.role === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+          {messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground opacity-30 space-y-4">
+              <MessageSquare className="w-16 h-12" />
+              <p className="text-lg font-medium">{content.noMessages.value}</p>
+            </div>
+          )}
+          {messages.map((msg, idx) => (
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                msg.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : msg.role === "system"
-                  ? "bg-destructive/10 text-destructive"
-                  : "bg-muted"
+              key={idx}
+              className={`flex ${
+                msg.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              <div className="text-xs opacity-50 mb-1 capitalize">{msg.role}</div>
-              <div className="whitespace-pre-wrap">{msg.content}</div>
+              <div
+                className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm shadow-sm ${
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground rounded-tr-none"
+                    : msg.role === "system"
+                    ? "bg-destructive/10 text-destructive text-center w-full shadow-none border border-destructive/20"
+                    : "bg-muted text-foreground rounded-tl-none"
+                }`}
+              >
+                {msg.role !== 'user' && msg.role !== 'system' && (
+                  <div className="text-[10px] font-bold opacity-40 mb-1.5 uppercase tracking-wider">{msg.role}</div>
+                )}
+                <div className="whitespace-pre-wrap leading-relaxed">
+                  {renderMessageContent(msg.content)}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-muted rounded-lg px-4 py-2 animate-pulse">
-              Thinking...
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-muted text-muted-foreground rounded-2xl rounded-tl-none px-5 py-3 text-sm animate-pulse shadow-sm">
+                <span className="flex gap-1">
+                  <span className="animate-bounce">.</span>
+                  <span className="animate-bounce [animation-delay:0.2s]">.</span>
+                  <span className="animate-bounce [animation-delay:0.4s]">.</span>
+                </span>
+              </div>
             </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
-      {/* Input Area */}
-      <div className="flex gap-2 pt-2 border-t">
-        <Textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-          placeholder="Type your message..."
-          className="resize-none"
-        />
-        <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
-          Send
-        </Button>
+        {/* Input area */}
+        <div className="p-6 border-t bg-card/50">
+          <div className="max-w-3xl mx-auto space-y-4">
+            {/* Image Preview */}
+            {selectedImage && (
+              <div className="relative inline-block group">
+                <img 
+                  src={selectedImage} 
+                  alt="Preview" 
+                  className="h-24 w-24 object-cover rounded-xl border-2 border-primary/20 shadow-md"
+                />
+                <button 
+                  onClick={() => setSelectedImage(null)}
+                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+
+            <div className="flex gap-3 items-end">
+              <div className="flex-1 relative flex gap-2 items-end bg-background border rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-sm">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 shrink-0 text-muted-foreground hover:text-primary transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <ImageIcon className="w-5 h-5" />
+                </Button>
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  ref={fileInputRef} 
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+                <Textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                  placeholder={content.placeholder.value}
+                  className="min-h-[44px] max-h-48 border-0 focus-visible:ring-0 px-0 py-2.5 shadow-none"
+                />
+              </div>
+              <Button 
+                onClick={handleSend} 
+                disabled={isLoading || (!input.trim() && !selectedImage)}
+                className="h-[52px] px-8 rounded-2xl shadow-md transition-transform active:scale-95"
+              >
+                {content.sendButton.value}
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
