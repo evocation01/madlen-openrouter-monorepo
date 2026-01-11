@@ -15,6 +15,10 @@ const landingContent: Dictionary = {
       en: "Get Started",
       tr: "Hemen Başla",
     }),
+    loginModalTitle: t({
+      en: "Login to Get Started",
+      tr: "Başlamak için Giriş Yapın",
+    }),
     features: {
       multiModel: t({
         en: "Multi-Model Support",

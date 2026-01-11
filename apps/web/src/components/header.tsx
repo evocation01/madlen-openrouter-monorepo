@@ -24,15 +24,28 @@ export function Header() {
   const pathname = usePathname();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
+  // Extract locale from pathname (reliable in App Router with i18n middleware)
+  const currentLocale = pathname.split("/")[1] || "en";
+
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
   const toggleLanguage = () => {
-    const currentLocale = pathname.split("/")[1];
     const newLocale = currentLocale === "en" ? "tr" : "en";
-    const newPath = pathname.replace(`/${currentLocale}`, `/${newLocale}`);
+    
+    // Replace the first segment of the path
+    const segments = pathname.split("/");
+    if (segments[1] === currentLocale) {
+      segments[1] = newLocale;
+    } else {
+      // If locale is missing (e.g. root), prepend it (though middleware should handle this)
+      segments.splice(1, 0, newLocale);
+    }
+    const newPath = segments.join("/");
+    
     router.push(newPath);
+    router.refresh(); // Force refresh to ensure server components update
   };
 
   return (
@@ -59,7 +72,7 @@ export function Header() {
         {/* Language Switcher */}
         <Button variant="ghost" size="sm" onClick={toggleLanguage} className="gap-2 font-medium">
           <Globe className="w-4 h-4" />
-          <span className="uppercase">{pathname.split("/")[1]}</span>
+          <span className="uppercase">{currentLocale}</span>
         </Button>
 
         {/* Auth */}

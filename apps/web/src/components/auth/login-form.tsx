@@ -12,7 +12,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
-  const content = useIntlayer("chat"); // Reusing chat content for now, or create dedicated auth content
+  const content = useIntlayer("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,13 +31,13 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        setError(content.errorInvalid.value);
       } else {
         // Success
         if (onSuccess) onSuccess();
       }
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      setError(content.errorGeneric.value);
     } finally {
       setIsLoading(false);
     }
@@ -46,22 +46,22 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid gap-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{content.emailLabel.value}</Label>
         <Input
           id="email"
           type="email"
-          placeholder="test@example.com"
+          placeholder={content.emailPlaceholder.value}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{content.passwordLabel.value}</Label>
         <Input
           id="password"
           type="password"
-          placeholder="******"
+          placeholder={content.passwordPlaceholder.value}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -69,7 +69,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       </div>
       {error && <p className="text-sm text-destructive font-medium">{error}</p>}
       <Button type="submit" disabled={isLoading}>
-        {isLoading ? "Signing In..." : "Sign In"}
+        {isLoading ? content.loading.value : content.submitButton.value}
       </Button>
     </form>
   );

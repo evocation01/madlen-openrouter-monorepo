@@ -20,3 +20,231 @@ Devstral 2 is a state-of-the-art open-source model by Mistral AI specializing in
 Devstral 2 supports exploring codebases and orchestrating changes across multiple files while maintaining architecture-level context. It tracks framework dependencies, detects failures, and retries with corrections—solving challenges like bug fixing and modernizing legacy systems. The model can be fine-tuned to prioritize specific languages or optimize for large enterprise codebases. It is available under a modified MIT license.
 
 4- qwen/qwen3-coder:free
+Created Jul 23, 2025 - 262,000 context
+$0/M input tokens$0/M output tokens
+
+Qwen3-Coder-480B-A35B-Instruct is a Mixture-of-Experts (MoE) code generation model developed by the Qwen team. It is optimized for agentic coding tasks such as function calling, tool use, and long-context reasoning over repositories. The model features 480 billion total parameters, with 35 billion active per forward pass (8 out of 160 experts).
+
+Pricing for the Alibaba endpoints varies by context length. Once a request is greater than 128k input tokens, the higher pricing is used.
+
+5-nvidia/nemotron-3-nano-30b-a3b:free
+Created Dec 14, 2025256,000 context
+$0/M input tokens$0/M output tokens
+
+NVIDIA Nemotron 3 Nano 30B A3B is a small language MoE model with highest compute efficiency and accuracy for developers to build specialized agentic AI systems.
+
+The model is fully open with open-weights, datasets and recipes so developers can easily
+customize, optimize, and deploy the model on their infrastructure for maximum privacy and
+security.
+
+Note: For the free endpoint, all prompts and output are logged to improve the provider's model and its product and services. Please do not upload any personal, confidential, or otherwise sensitive information. This is a trial use only. Do not use for production or business-critical systems.
+
+6- tngtech/deepseek-r1t2-chimera:free
+Created Jul 8, 2025163,840 context
+$0/M input tokens$0/M output tokens
+
+DeepSeek-TNG-R1T2-Chimera is the second-generation Chimera model from TNG Tech. It is a 671 B-parameter mixture-of-experts text-generation model assembled from DeepSeek-AI’s R1-0528, R1, and V3-0324 checkpoints with an Assembly-of-Experts merge. The tri-parent design yields strong reasoning performance while running roughly 20 % faster than the original R1 and more than 2× faster than R1-0528 under vLLM, giving a favorable cost-to-intelligence trade-off. The checkpoint supports contexts up to 60 k tokens in standard use (tested to ~130 k) and maintains consistent <think> token behaviour, making it suitable for long-context analysis, dialogue and other open-ended generation tasks.
+
+7- deepseek/deepseek-r1-0528:free
+Created May 28, 2025163,840 context
+$0/M input tokens$0/M output tokens
+
+May 28th update to the original DeepSeek R1 Performance on par with OpenAI o1, but open-sourced and with fully open reasoning tokens. It's 671B parameters in size, with 37B active in an inference pass.
+
+Fully open-source model.
+
+8- tngtech/tng-r1t-chimera:free
+Created Nov 26, 2025163,840 context
+$0/M input tokens$0/M output tokens
+
+TNG-R1T-Chimera is an experimental LLM with a faible for creative storytelling and character interaction. It is a derivate of the original TNG/DeepSeek-R1T-Chimera released in April 2025 and is available exclusively via Chutes and OpenRouter.
+
+Characteristics and improvements include:
+
+We think that it has a creative and pleasant personality.
+It has a preliminary EQ-Bench3 value of about 1305.
+It is quite a bit more intelligent than the original, albeit a slightly slower.
+It is much more think-token consistent, i.e. reasoning and answer blocks are properly delineated.
+Tool calling is much improved.
+
+TNG Tech, the model authors, ask that users follow the careful guidelines that Microsoft has created for their "MAI-DS-R1" DeepSeek-based model. These guidelines are available on Hugging Face (https://huggingface.co/microsoft/MAI-DS-R1
+).
+
+9- tngtech/deepseek-r1t-chimera:free
+Created Apr 27, 2025163,840 context
+$0/M input tokens$0/M output tokens
+
+DeepSeek-R1T-Chimera is created by merging DeepSeek-R1 and DeepSeek-V3 (0324), combining the reasoning capabilities of R1 with the token efficiency improvements of V3. It is based on a DeepSeek-MoE Transformer architecture and is optimized for general text generation tasks.
+
+The model merges pretrained weights from both source models to balance performance across reasoning, efficiency, and instruction-following tasks. It is released under the MIT license and intended for research and commercial use.
+
+10- arcee-ai/trinity-mini:free
+Created Dec 1, 2025131,072 context
+$0/M input tokens$0/M output tokens
+
+Trinity Mini is a 26B-parameter (3B active) sparse mixture-of-experts language model featuring 128 experts with 8 active per token. Engineered for efficient reasoning over long contexts (131k) with robust function calling and multi-step agent workflows.
+
+11- openai/gpt-oss-120b:free
+Created Aug 5, 2025131,072 context
+$0/M input tokens$0/M output tokens
+
+gpt-oss-120b is an open-weight, 117B-parameter Mixture-of-Experts (MoE) language model from OpenAI designed for high-reasoning, agentic, and general-purpose production use cases. It activates 5.1B parameters per forward pass and is optimized to run on a single H100 GPU with native MXFP4 quantization. The model supports configurable reasoning depth, full chain-of-thought access, and native tool use, including function calling, browsing, and structured output generation.
+
+12- openai/gpt-oss-20b:free
+Created Aug 5, 2025131,072 context
+$0/M input tokens$0/M output tokens
+
+gpt-oss-20b is an open-weight 21B parameter model released by OpenAI under the Apache 2.0 license. It uses a Mixture-of-Experts (MoE) architecture with 3.6B active parameters per forward pass, optimized for lower-latency inference and deployability on consumer or single-GPU hardware. The model is trained in OpenAI’s Harmony response format and supports reasoning level configuration, fine-tuning, and agentic capabilities including function calling, tool use, and structured outputs.
+
+13-z-ai/glm-4.5-air:free
+Created Jul 25, 2025131,072 context
+$0/M input tokens$0/M output tokens
+
+GLM-4.5-Air is the lightweight variant of our latest flagship model family, also purpose-built for agent-centric applications. Like GLM-4.5, it adopts the Mixture-of-Experts (MoE) architecture but with a more compact parameter size. GLM-4.5-Air also supports hybrid inference modes, offering a "thinking mode" for advanced reasoning and tool use, and a "non-thinking mode" for real-time interaction. Users can control the reasoning behaviour with the reasoning enabled boolean.
+
+14- google/gemma-3-27b-it:free
+Created Mar 12, 2025131,072 context
+$0/M input tokens$0/M output tokens
+
+Gemma 3 introduces multimodality, supporting vision-language input and text outputs. It handles context windows up to 128k tokens, understands over 140 languages, and offers improved math, reasoning, and chat capabilities, including structured outputs and function calling. Gemma 3 27B is Google's latest open source model, successor to Gemma 2
+
+15- meta-llama/llama-3.3-70b-instruct:free
+Created Dec 6, 2024131,072 context
+$0/M input tokens$0/M output tokens
+
+The Meta Llama 3.3 multilingual large language model (LLM) is a pretrained and instruction tuned generative model in 70B (text in/text out). The Llama 3.3 instruction tuned text only model is optimized for multilingual dialogue use cases and outperforms many of the available open source and closed chat models on common industry benchmarks.
+
+Supported languages: English, German, French, Italian, Portuguese, Hindi, Spanish, and Thai.
+
+16- meta-llama/llama-3.2-3b-instruct:free
+Created Sep 25, 2024131,072 context
+$0/M input tokens$0/M output tokens
+
+Llama 3.2 3B is a 3-billion-parameter multilingual large language model, optimized for advanced natural language processing tasks like dialogue generation, reasoning, and summarization. Designed with the latest transformer architecture, it supports eight languages, including English, Spanish, and Hindi, and is adaptable for additional languages.
+
+Trained on 9 trillion tokens, the Llama 3.2 3B model excels in instruction-following, complex reasoning, and tool use. Its balanced performance makes it ideal for applications needing accuracy and efficiency in text generation across multilingual settings.
+
+Click here for the original model card
+
+.
+
+Usage of this model is subject to Meta's Acceptable Use Policy
+.
+
+17- nousresearch/hermes-3-llama-3.1-405b:free
+Created Aug 16, 2024131,072 context
+$0/M input tokens$0/M output tokens
+
+Hermes 3 is a generalist language model with many improvements over Hermes 2, including advanced agentic capabilities, much better roleplaying, reasoning, multi-turn conversation, long context coherence, and improvements across the board.
+
+Hermes 3 405B is a frontier-level, full-parameter finetune of the Llama-3.1 405B foundation model, focused on aligning LLMs to the user, with powerful steering capabilities and control given to the end user.
+
+The Hermes 3 series builds and expands on the Hermes 2 set of capabilities, including more powerful and reliable function calling and structured output capabilities, generalist assistant capabilities, and improved code generation skills.
+
+Hermes 3 is competitive, if not superior, to Llama-3.1 Instruct models at general capabilities, with varying strengths and weaknesses attributable between the two.
+
+18-
+meta-llama/llama-3.1-405b-instruct:free
+Created Jul 23, 2024131,072 context
+$0/M input tokens$0/M output tokens
+
+The highly anticipated 400B class of Llama3 is here! Clocking in at 128k context with impressive eval scores, the Meta AI team continues to push the frontier of open-source LLMs.
+
+Meta's latest class of model (Llama 3.1) launched with a variety of sizes & flavors. This 405B instruct-tuned version is optimized for high quality dialogue usecases.
+
+It has demonstrated strong performance compared to leading closed-source models including GPT-4o and Claude 3.5 Sonnet in evaluations.
+
+To read more about the model release, click here
+. Usage of this model is subject to Meta's Acceptable Use Policy.
+
+19- nvidia/nemotron-nano-12b-v2-vl:free
+Created Oct 28, 2025128,000 context
+$0/M input tokens$0/M output tokens
+
+NVIDIA Nemotron Nano 2 VL is a 12-billion-parameter open multimodal reasoning model designed for video understanding and document intelligence. It introduces a hybrid Transformer-Mamba architecture, combining transformer-level accuracy with Mamba’s memory-efficient sequence modeling for significantly higher throughput and lower latency.
+
+The model supports inputs of text and multi-image documents, producing natural-language outputs. It is trained on high-quality NVIDIA-curated synthetic datasets optimized for optical-character recognition, chart reasoning, and multimodal comprehension.
+
+Nemotron Nano 2 VL achieves leading results on OCRBench v2 and scores ≈ 74 average across MMMU, MathVista, AI2D, OCRBench, OCR-Reasoning, ChartQA, DocVQA, and Video-MME—surpassing prior open VL baselines. With Efficient Video Sampling (EVS), it handles long-form videos while reducing inference cost.
+
+Open-weights, training data, and fine-tuning recipes are released under a permissive NVIDIA open license, with deployment supported across NeMo, NIM, and major inference runtimes.
+
+20- nvidia/nemotron-nano-9b-v2:free
+Created Sep 5, 2025128,000 context
+$0/M input tokens$0/M output tokens
+
+NVIDIA-Nemotron-Nano-9B-v2 is a large language model (LLM) trained from scratch by NVIDIA, and designed as a unified model for both reasoning and non-reasoning tasks. It responds to user queries and tasks by first generating a reasoning trace and then concluding with a final response.
+
+The model's reasoning capabilities can be controlled via a system prompt. If the user prefers the model to provide its final answer without intermediate reasoning traces, it can be configured to do so.
+
+21- mistralai/mistral-small-3.1-24b-instruct:free
+Created Mar 17, 2025128,000 context
+$0/M input tokens$0/M output tokens
+
+Mistral Small 3.1 24B Instruct is an upgraded variant of Mistral Small 3 (2501), featuring 24 billion parameters with advanced multimodal capabilities. It provides state-of-the-art performance in text-based reasoning and vision tasks, including image analysis, programming, mathematical reasoning, and multilingual support across dozens of languages. Equipped with an extensive 128k token context window and optimized for efficient local inference, it supports use cases such as conversational agents, function calling, long-document comprehension, and privacy-sensitive deployments. The updated version is Mistral Small 3.2
+
+22- qwen/qwen3-4b:free
+Created Apr 30, 202540,960 context
+$0/M input tokens$0/M output tokens
+
+Qwen3-4B is a 4 billion parameter dense language model from the Qwen3 series, designed to support both general-purpose and reasoning-intensive tasks. It introduces a dual-mode architecture—thinking and non-thinking—allowing dynamic switching between high-precision logical reasoning and efficient dialogue generation. This makes it well-suited for multi-turn chat, instruction following, and complex agent workflows.
+
+23- allenai/molmo-2-8b:free
+Created Jan 9, 202636,864 context
+$0/M input tokens$0/M output tokens
+
+Molmo2-8B is an open vision-language model developed by the Allen Institute for AI (Ai2) as part of the Molmo2 family, supporting image, video, and multi-image understanding and grounding. It is based on Qwen3-8B and uses SigLIP 2 as its vision backbone, outperforming other open-weight, open-data models on short videos, counting, and captioning, while remaining competitive on long-video tasks.
+
+24-moonshotai/kimi-k2:free
+Created Jul 11, 202532,768 context
+$0/M input tokens$0/M output tokens
+
+Kimi K2 Instruct is a large-scale Mixture-of-Experts (MoE) language model developed by Moonshot AI, featuring 1 trillion total parameters with 32 billion active per forward pass. It is optimized for agentic capabilities, including advanced tool use, reasoning, and code synthesis. Kimi K2 excels across a broad range of benchmarks, particularly in coding (LiveCodeBench, SWE-bench), reasoning (ZebraLogic, GPQA), and tool-use (Tau2, AceBench) tasks. It supports long-context inference up to 128K tokens and is designed with a novel training stack that includes the MuonClip optimizer for stable large-scale MoE training.
+
+25- cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+Created Jul 9, 202532,768 context
+$0/M input tokens$0/M output tokens
+
+Venice Uncensored Dolphin Mistral 24B Venice Edition is a fine-tuned variant of Mistral-Small-24B-Instruct-2501, developed by dphn.ai in collaboration with Venice.ai. This model is designed as an “uncensored” instruct-tuned LLM, preserving user control over alignment, system prompts, and behavior. Intended for advanced and unrestricted use cases, Venice Uncensored emphasizes steerability and transparent behavior, removing default safety and alignment layers typically found in mainstream assistant models.
+
+26- google/gemma-3-4b-it:free
+Created Mar 13, 202532,768 context
+$0/M input tokens$0/M output tokens
+
+Gemma 3 introduces multimodality, supporting vision-language input and text outputs. It handles context windows up to 128k tokens, understands over 140 languages, and offers improved math, reasoning, and chat capabilities, including structured outputs and function calling.
+
+27- google/gemma-3-12b-it:free
+Created Mar 13, 202532,768 context
+$0/M input tokens$0/M output tokens
+
+Gemma 3 introduces multimodality, supporting vision-language input and text outputs. It handles context windows up to 128k tokens, understands over 140 languages, and offers improved math, reasoning, and chat capabilities, including structured outputs and function calling. Gemma 3 12B is the second largest in the family of Gemma 3 models after Gemma 3 27B
+
+28- qwen/qwen-2.5-vl-7b-instruct:free
+Created Aug 28, 202432,768 context
+$0/M input tokens$0/M output tokens
+
+Qwen2.5 VL 7B is a multimodal LLM from the Qwen Team with the following key enhancements:
+
+    SoTA understanding of images of various resolution & ratio: Qwen2.5-VL achieves state-of-the-art performance on visual understanding benchmarks, including MathVista, DocVQA, RealWorldQA, MTVQA, etc.
+
+    Understanding videos of 20min+: Qwen2.5-VL can understand videos over 20 minutes for high-quality video-based question answering, dialog, content creation, etc.
+
+    Agent that can operate your mobiles, robots, etc.: with the abilities of complex reasoning and decision making, Qwen2.5-VL can be integrated with devices like mobile phones, robots, etc., for automatic operation based on visual environment and text instructions.
+
+    Multilingual Support: to serve global users, besides English and Chinese, Qwen2.5-VL now supports the understanding of texts in different languages inside images, including most European languages, Japanese, Korean, Arabic, Vietnamese, etc.
+
+29-mistralai/mistral-7b-instruct:free
+Created May 27, 202432,768 context
+$0/M input tokens$0/M output tokens
+
+A high-performing, industry-standard 7.3B parameter model, with optimizations for speed and context length.
+
+Mistral 7B Instruct has multiple version variants, and this is intended to be the latest version.
+
+30- google/gemma-3n-e4b-it:free
+Created May 20, 20258,192 context
+$0/M input tokens$0/M output tokens
+
+Gemma 3n E4B-it is optimized for efficient execution on mobile and low-resource devices, such as phones, laptops, and tablets. It supports multimodal inputs—including text, visual data, and audio—enabling diverse tasks such as text generation, speech recognition, translation, and image analysis. Leveraging innovations like Per-Layer Embedding (PLE) caching and the MatFormer architecture, Gemma 3n dynamically manages memory usage and computational load by selectively activating model parameters, significantly reducing runtime resource requirements.
+
+This model supports a wide linguistic range (trained in over 140 languages) and features a flexible 32K token context window. Gemma 3n can selectively load parameters, optimizing memory and computational efficiency based on the task or device capabilities, making it well-suited for privacy-focused, offline-capable applications and on-device AI solutions.
