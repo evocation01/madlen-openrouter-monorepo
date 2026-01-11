@@ -89,6 +89,7 @@ Access the Jaeger UI at [http://localhost:16686](http://localhost:16686) to view
 ## Internationalization
 
 This project supports English (default) and Turkish.
+
 -   Content is managed via `intlayer`.
 -   Locale detection is handled by middleware.
 -   Change URL to `/tr` to see the Turkish version (once content is added).
