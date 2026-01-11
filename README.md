@@ -2,13 +2,13 @@
 
 ## Overview
 
-This is a modern full-stack web application designed as a chat interface for OpenRouter. It is built as a monorepo using **Turbo** and **pnpm workspaces**, featuring a **Next.js 15** frontend, an **Express** backend, and shared packages for UI, database, and logic.
+This is a modern full-stack web application designed as a chat interface for OpenRouter. It is built as a monorepo using **Turbo** and **pnpm workspaces**, featuring a **Next.js 16** frontend, an **Express** backend, and shared packages for UI, database, and logic.
 
 ## Technical Stack & Choices
 
 -   **Monorepo**: Managed by `pnpm` workspaces and `Turbo` for efficient build caching and task orchestration.
 -   **Frontend (`apps/web`)**:
-    -   **Next.js 15 (App Router)**: For server-side rendering, routing, and React server components.
+    -   **Next.js 16 (App Router)**: For server-side rendering, routing, and React server components.
     -   **Tailwind CSS v4**: For utility-first styling with the latest features.
     -   **next-intlayer**: For internationalization (English/Turkish), keeping content co-located with components.
     -   **Auth.js (v5)**: For secure authentication using the Credentials provider and Prisma adapter.
@@ -18,7 +18,7 @@ This is a modern full-stack web application designed as a chat interface for Ope
     -   **OpenTelemetry**: For observability and distributed tracing (Jaeger).
 -   **Database**:
     -   **PostgreSQL**: Relational database for persistent storage.
-    -   **Prisma**: Type-safe ORM for database interactions.
+    -   **Prisma v7**: Type-safe ORM for database interactions.
 -   **Shared Packages**:
     -   `@repo/ui`: Shared UI components (shadcn/ui style).
     -   `@repo/shared`: Shared Zod schemas and TypeScript utilities.
@@ -27,8 +27,8 @@ This is a modern full-stack web application designed as a chat interface for Ope
 
 ## Prerequisites
 
--   Node.js 20+
--   pnpm 9+
+-   Node.js 22+
+-   pnpm 10+
 -   Docker & Docker Compose
 
 ## Getting Started
@@ -49,7 +49,7 @@ This is a modern full-stack web application designed as a chat interface for Ope
 
     ```bash
     # Generate Prisma client
-    pnpm db:generate
+    pnpm turbo db:generate
 
     # Push schema to the database (dev mode)
     cd packages/database
@@ -95,4 +95,4 @@ This project supports English (default) and Turkish.
 
 ## License
 
-ISC
+MIT License. See [LICENSE](LICENSE) for more details.

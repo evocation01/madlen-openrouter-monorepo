@@ -8,8 +8,8 @@
     "react-internal.js"
   ],
   "devDependencies": {
-    "eslint": "^8.57.0",
-    "eslint-config-turbo": "^2.0.0",
-    "typescript": "^5.0.0"
+    "eslint": "^9.39.2",
+    "eslint-config-turbo": "^2.7.3",
+    "typescript": "^5.9.3"
   }
 }

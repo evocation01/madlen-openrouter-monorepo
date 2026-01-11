@@ -18,12 +18,15 @@
     }
   },
   "dependencies": {
-    "@prisma/client": "^5.10.2"
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
+    "@types/pg": "^8.16.0",
+    "pg": "^8.16.3"
   },
   "devDependencies": {
-    "prisma": "^5.10.2",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^20.11.24",
-    "typescript": "^5.3.3"
+    "@types/node": "^25.0.6",
+    "prisma": "^7.2.0",
+    "typescript": "^5.9.3"
   }
 }
