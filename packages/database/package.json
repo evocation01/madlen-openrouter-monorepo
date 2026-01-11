@@ -1,0 +1,29 @@
+{
+  "name": "@repo/database",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "src/*"
+      ]
+    }
+  },
+  "dependencies": {
+    "@prisma/client": "^5.10.2"
+  },
+  "devDependencies": {
+    "prisma": "^5.10.2",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3"
+  }
+}
