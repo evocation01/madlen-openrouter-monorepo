@@ -45,12 +45,12 @@ interface Conversation {
 
 const API_URL = "http://localhost:3000";
 
-const CodeBlock = ({ 
+const CodeBlock = ({
     language,
     value,
     copyLabel,
-    copiedLabel
-}: { 
+    copiedLabel,
+}: {
     language: string;
     value: string;
     copyLabel: string;
@@ -269,7 +269,11 @@ export function ChatInterface() {
         }
     };
 
-    const MarkdownRenderer = ({ content: textContent }: { content: string }) => {
+    const MarkdownRenderer = ({
+        content: textContent,
+    }: {
+        content: string;
+    }) => {
         return (
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -280,9 +284,9 @@ export function ChatInterface() {
                         const value = String(children).replace(/\n$/, "");
 
                         return !inline ? (
-                            <CodeBlock 
-                                language={language} 
-                                value={value} 
+                            <CodeBlock
+                                language={language}
+                                value={value}
                                 copyLabel={content.copy.value}
                                 copiedLabel={content.copied.value}
                             />
@@ -381,14 +385,14 @@ export function ChatInterface() {
                             <button
                                 key={chat.id}
                                 onClick={() => loadConversation(chat.id)}
-                                className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all hover:bg-accent hover:text-accent-foreground flex items-center gap-2 truncate group ${ 
+                                className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all hover:bg-accent hover:text-accent-foreground flex items-center gap-2 truncate group ${
                                     conversationId === chat.id
                                         ? "bg-accent text-accent-foreground shadow-sm font-medium"
                                         : "text-muted-foreground"
                                 }`}
                             >
                                 <MessageSquare
-                                    className={`w-4 h-4 shrink-0 transition-opacity ${ 
+                                    className={`w-4 h-4 shrink-0 transition-opacity ${
                                         conversationId === chat.id
                                             ? "opacity-100"
                                             : "opacity-50 group-hover:opacity-100"
@@ -441,14 +445,14 @@ export function ChatInterface() {
                     {messages.map((msg, idx) => (
                         <div
                             key={idx}
-                            className={`flex ${ 
+                            className={`flex ${
                                 msg.role === "user"
                                     ? "justify-end"
                                     : "justify-start"
                             }`}
                         >
                             <div
-                                className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm shadow-sm ${ 
+                                className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm shadow-sm ${
                                     msg.role === "user"
                                         ? "bg-primary text-primary-foreground rounded-tr-none"
                                         : msg.role === "system"
@@ -506,8 +510,8 @@ export function ChatInterface() {
                             </div>
                         )}
 
-                        <div className="flex gap-3 items-end">
-                            <div className="flex-1 relative flex gap-2 items-end bg-background border rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-sm">
+                        <div className="flex gap-3 items-center">
+                            <div className="flex-1 relative flex gap-2 items-center bg-background border rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-sm">
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -518,6 +522,7 @@ export function ChatInterface() {
                                 >
                                     <ImageIcon className="w-5 h-5" />
                                 </Button>
+
                                 <input
                                     type="file"
                                     className="hidden"
@@ -525,26 +530,29 @@ export function ChatInterface() {
                                     accept="image/*"
                                     onChange={handleImageUpload}
                                 />
+
                                 <Textarea
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter" && !e.shiftKey) {
                                             e.preventDefault();
+
                                             handleSend();
                                         }
                                     }}
                                     placeholder={content.placeholder.value}
-                                    className="min-h-[44px] max-h-48 border-0 focus-visible:ring-0 px-0 py-2.5 shadow-none"
+                                    className="min-h-[44px] max-h-48 border-0 focus-visible:ring-0 px-0 py-4 shadow-none"
                                 />
                             </div>
+
                             <Button
                                 onClick={handleSend}
                                 disabled={
                                     isLoading ||
                                     (!input.trim() && !selectedImage)
                                 }
-                                className="h-[52px] px-8 rounded-2xl shadow-md transition-transform active:scale-95"
+                                className="h-[52px] px-8 rounded-2xl shadow-md transition-transform active:scale-95 shrink-0"
                             >
                                 {content.sendButton.value}
                             </Button>
