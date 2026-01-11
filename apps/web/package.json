@@ -14,8 +14,10 @@
     "@repo/shared": "workspace:*",
     "@types/bcryptjs": "^3.0.0",
     "bcryptjs": "^3.0.3",
+    "intlayer": "^7.5.12",
     "next": "^15.1.7",
     "next-auth": "5.0.0-beta.30",
+    "next-intlayer": "^7.5.12",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
