@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@repo/ui/components/ui/button";
-import { Input } from "@repo/ui/components/ui/input";
 import { Textarea } from "@repo/ui/components/ui/textarea";
 import { useSession, signIn } from "next-auth/react";
 import { useIntlayer } from "next-intlayer";
@@ -37,22 +36,14 @@ const API_URL = "http://localhost:3000";
 export function ChatInterface() {
   const { data: session, status } = useSession();
   const content = useIntlayer("chat");
-  
-  // Chat State
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [models, setModels] = useState<Model[]>([]);
   const [history, setHistory] = useState<Conversation[]>([]);
-  const [selectedModel, setSelectedModel] = useState("meta-llama/llama-3-8b-instruct:free");
+  const [selectedModel, setSelectedModel] = useState("google/gemini-2.0-flash-exp:free");
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  
-  // Login State
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -72,33 +63,17 @@ export function ChatInterface() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleLogin = async () => {
-    setIsLoggingIn(true);
-    setLoginError("");
-    try {
-      const result = await signIn("credentials", { 
-        email, 
-        password, 
-        redirect: false 
-      });
-      
-      if (result?.error) {
-        setLoginError("Invalid email or password");
-      }
-    } catch (error) {
-      setLoginError("Login failed");
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
   const fetchModels = async () => {
     try {
       const freeModels = [
-        { id: "meta-llama/llama-3-8b-instruct:free", name: "Llama 3 8B (Free)" },
-        { id: "google/gemini-flash-1.5-exp:free", name: "Gemini Flash 1.5 (Free)" },
-        { id: "mistralai/mistral-7b-instruct:free", name: "Mistral 7B (Free)" },
-        { id: "openai/gpt-4o-mini", name: "GPT-4o Mini (Multimodal)" },
+        { id: "google/gemini-2.0-flash-exp:free", name: "Gemini 2.0 Flash (Free)" },
+        { id: "meta-llama/llama-3.3-70b-instruct:free", name: "Llama 3.3 70B (Free)" },
+        { id: "mistralai/devstral-2512:free", name: "Mistral Devstral 2512 (Free)" },
+        { id: "xiaomi/mimo-v2-flash:free", name: "Xiaomi Mimo V2 (Free)" },
+        { id: "tngtech/deepseek-r1t2-chimera:free", name: "DeepSeek R1T2 Chimera (Free)" },
+        { id: "qwen/qwen3-coder:free", name: "Qwen 3 Coder (Free)" },
+        { id: "openai/gpt-oss-120b:free", name: "GPT OSS 120B (Free)" },
+        { id: "openai/gpt-oss-20b:free", name: "GPT OSS 20B (Free)" },
       ];
       setModels(freeModels);
     } catch (e) {
@@ -237,55 +212,25 @@ export function ChatInterface() {
 
   if (status === "loading") return <div className="p-8 text-center">Loading...</div>;
 
-  if (status === "unauthenticated") {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-4 border rounded-xl bg-card shadow-sm p-8 max-w-md mx-auto mt-10">
-        <h2 className="text-xl font-bold">{content.signInRequired.value}</h2>
-        
-        <div className="flex flex-col gap-4 w-full">
-          <Input 
-            type="email"
-            placeholder="Email (test@example.com)" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Input 
-            type="password"
-            placeholder="Password (password123)" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-          />
-          {loginError && (
-            <p className="text-destructive text-sm">{loginError}</p>
-          )}
-          <Button onClick={handleLogin} disabled={isLoggingIn} className="w-full">
-            {isLoggingIn ? "Signing In..." : content.signInButton.value}
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-full w-full gap-4">
-      {/* Sidebar */}
-      <div className="w-64 flex flex-col gap-2 border rounded-xl p-3 bg-muted/30 backdrop-blur-sm">
+    <div className="flex h-full w-full gap-4 min-h-0">
+      {/* Sidebar - Hidden on mobile */}
+      <div className="hidden md:flex w-64 flex-col gap-2 border rounded-xl p-3 bg-muted/30 backdrop-blur-sm min-h-0">
         <Button 
           variant="outline" 
-          className="w-full justify-start gap-2 mb-2 bg-background shadow-sm" 
+          className="w-full justify-start gap-2 mb-2 bg-background shadow-sm shrink-0" 
           onClick={handleNewChat}
         >
           <Plus className="w-4 h-4" />
           {content.newChatButton.value}
         </Button>
         
-        <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+        <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-muted-foreground uppercase tracking-widest shrink-0">
           <History className="w-3 h-3" />
           {content.historyTitle.value}
         </div>
         
-        <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar min-h-0">
           {history.length === 0 ? (
             <div className="text-xs text-center text-muted-foreground p-4">No history yet</div>
           ) : (
@@ -306,14 +251,14 @@ export function ChatInterface() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col border rounded-xl shadow-md bg-card overflow-hidden">
+      <div className="flex-1 flex flex-col border rounded-xl shadow-md bg-card overflow-hidden min-h-0">
         {/* Header */}
-        <div className="flex justify-between items-center px-6 py-4 border-b bg-card/50 backdrop-blur-md">
+        <div className="flex justify-between items-center px-6 py-4 border-b bg-card/50 backdrop-blur-md shrink-0">
           <h2 className="font-bold text-base md:text-lg">{content.title.value}</h2>
           <div className="flex items-center gap-3">
             <span className="text-xs font-semibold text-muted-foreground hidden sm:block">{content.modelLabel.value}</span>
             <select
-              className="p-2 border rounded-lg text-xs bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all cursor-pointer hover:border-muted-foreground/50 shadow-sm"
+              className="p-2 border rounded-lg text-xs bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all cursor-pointer hover:border-muted-foreground/50 shadow-sm max-w-[150px] md:max-w-xs truncate"
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
             >
@@ -327,7 +272,7 @@ export function ChatInterface() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar min-h-0 overscroll-contain">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground opacity-30 space-y-4">
               <MessageSquare className="w-16 h-12" />
@@ -374,7 +319,7 @@ export function ChatInterface() {
         </div>
 
         {/* Input area */}
-        <div className="p-6 border-t bg-card/50">
+        <div className="p-6 border-t bg-card/50 shrink-0">
           <div className="max-w-3xl mx-auto space-y-4">
             {/* Image Preview */}
             {selectedImage && (

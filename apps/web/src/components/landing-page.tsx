@@ -1,19 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import { useIntlayer } from "next-intlayer";
 import { Button } from "@repo/ui/components/ui/button";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { Sparkles, MessageSquareText, Layers, Image as ImageIcon } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@repo/ui/components/ui/dialog";
+import { LoginForm } from "@/components/auth/login-form";
+import { useRouter } from "next/navigation";
 
 export function LandingPage() {
   const content = useIntlayer("landing");
   const { data: session } = useSession();
-
-  const handleStart = () => {
-    if (!session) {
-      signIn();
-    }
-  };
+  const router = useRouter();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-4 space-y-12 animate-in fade-in zoom-in duration-500 slide-in-from-bottom-4">
@@ -30,13 +36,27 @@ export function LandingPage() {
           {content.heroDescription.value}
         </p>
         <div className="pt-4">
-          <Button 
-            size="lg" 
-            className="h-12 px-8 text-base rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5"
-            onClick={handleStart}
-          >
-            {content.getStarted.value}
-          </Button>
+          {!session && (
+            <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  size="lg" 
+                  className="h-12 px-8 text-base rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5"
+                >
+                  {content.getStarted.value}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Login to Get Started</DialogTitle>
+                </DialogHeader>
+                <LoginForm onSuccess={() => {
+                  setIsLoginOpen(false);
+                  router.refresh();
+                }} />
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
 

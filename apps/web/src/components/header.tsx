@@ -1,11 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { useIntlayer } from "next-intlayer";
 import { useTheme } from "next-themes";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { Button } from "@repo/ui/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@repo/ui/components/ui/dialog";
 import { Bot, Moon, Sun, Globe, LogOut, LogIn } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
+import { LoginForm } from "@/components/auth/login-form";
 
 export function Header() {
   const content = useIntlayer("header");
@@ -13,13 +22,13 @@ export function Header() {
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
   const toggleLanguage = () => {
-    // Basic locale switch logic assuming /[locale]/... structure
     const currentLocale = pathname.split("/")[1];
     const newLocale = currentLocale === "en" ? "tr" : "en";
     const newPath = pathname.replace(`/${currentLocale}`, `/${newLocale}`);
@@ -61,10 +70,23 @@ export function Header() {
               <span className="hidden sm:inline">{content.logout.value}</span>
             </Button>
           ) : (
-            <Button variant="default" size="sm" onClick={() => signIn()} className="gap-2 px-4">
-              <LogIn className="w-4 h-4" />
-              <span>{content.login.value}</span>
-            </Button>
+            <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
+              <DialogTrigger asChild>
+                <Button variant="default" size="sm" className="gap-2 px-4">
+                  <LogIn className="w-4 h-4" />
+                  <span>{content.login.value}</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>{content.login.value}</DialogTitle>
+                </DialogHeader>
+                <LoginForm onSuccess={() => {
+                  setIsLoginOpen(false);
+                  router.refresh();
+                }} />
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       </div>
