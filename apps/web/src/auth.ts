@@ -10,6 +10,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials) {
+        console.log("Authorize called with:", { email: credentials?.email });
         const validatedFields = LoginSchema.safeParse(credentials);
 
         if (validatedFields.success) {
@@ -19,14 +20,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             where: { email },
           });
           
-          if (!user || !user.password) return null;
+          if (!user || !user.password) {
+            console.log("User not found or no password");
+            return null;
+          }
           
           const passwordsMatch = await bcrypt.compare(
             password,
             user.password
           );
           
-          if (passwordsMatch) return user;
+          if (passwordsMatch) {
+            console.log("Login successful");
+            return user;
+          }
+          console.log("Password mismatch");
+        } else {
+          console.log("Validation failed");
         }
         
         return null;
