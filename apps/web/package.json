@@ -12,6 +12,7 @@
     "@auth/prisma-adapter": "^2.11.1",
     "@repo/database": "workspace:*",
     "@repo/shared": "workspace:*",
+    "@repo/ui": "workspace:*",
     "@types/bcryptjs": "^3.0.0",
     "bcryptjs": "^3.0.3",
     "intlayer": "^7.5.12",
