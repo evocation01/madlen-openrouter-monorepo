@@ -2,13 +2,43 @@ import axios from "axios";
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1";
 
-const FALLBACK_MODELS = [
-  "google/gemini-2.0-flash-exp:free",
-  "meta-llama/llama-3.3-70b-instruct:free",
-  "mistralai/devstral-2512:free",
-  "google/gemma-2-9b-it:free",
-  "meta-llama/llama-3.1-8b-instruct:free",
-  "microsoft/phi-3-medium-128k-instruct:free",
+const MODEL_CATEGORIES: Record<string, string[]> = {
+  reasoning: [
+    "tngtech/deepseek-r1t2-chimera:free",
+    "deepseek/deepseek-r1-0528:free",
+    "xiaomi/mimo-v2-flash:free",
+    "openai/gpt-oss-120b:free",
+    "openai/gpt-oss-20b:free",
+  ],
+  coding: [
+    "mistralai/devstral-2512:free",
+    "qwen/qwen3-coder:free",
+    "xiaomi/mimo-v2-flash:free",
+  ],
+  agentic: [
+    "mistralai/devstral-2512:free",
+    "qwen/qwen3-coder:free",
+    "nvidia/nemotron-3-nano-30b-a3b:free",
+    "arcee-ai/trinity-mini:free",
+    "openai/gpt-oss-120b:free",
+  ],
+  multimodal: [
+    "google/gemini-2.0-flash-exp:free",
+    "google/gemma-3-27b-it:free",
+    "nvidia/nemotron-nano-12b-v2-vl:free",
+    "qwen/qwen-2.5-vl-7b-instruct:free",
+  ],
+  general: [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "google/gemma-2-9b-it:free",
+    "microsoft/phi-3-medium-128k-instruct:free",
+    "meta-llama/llama-3.1-8b-instruct:free",
+  ]
+};
+
+const ALL_FALLBACKS = [
+  ...MODEL_CATEGORIES.general,
+  ...MODEL_CATEGORIES.multimodal,
 ];
 
 export class OpenRouterService {
@@ -41,11 +71,31 @@ export class OpenRouterService {
         throw new Error("OpenRouter API Key is missing");
     }
 
-    // Prioritize the requested model, then unique fallbacks
     const modelsToTry = [model];
+    
     if (allowFallback) {
-        FALLBACK_MODELS.forEach(m => {
-            if (m !== model) modelsToTry.push(m);
+        // 1. Identify category of requested model
+        let category = "general";
+        // Check exact match in categories
+        for (const [cat, models] of Object.entries(MODEL_CATEGORIES)) {
+            if (models.includes(model)) {
+                category = cat;
+                break;
+            }
+        }
+
+        console.log(`Model ${model} detected as category: ${category}`);
+
+        // 2. Add same-category models first
+        if (MODEL_CATEGORIES[category]) {
+            MODEL_CATEGORIES[category].forEach(m => {
+                if (m !== model && !modelsToTry.includes(m)) modelsToTry.push(m);
+            });
+        }
+
+        // 3. Add general fallbacks (if not already added)
+        ALL_FALLBACKS.forEach(m => {
+            if (!modelsToTry.includes(m)) modelsToTry.push(m);
         });
     }
 
@@ -73,7 +123,7 @@ export class OpenRouterService {
                 }
             );
             
-            // If we used a fallback, we might want to inform the caller
+            // If we used a fallback, append a note
             if (currentModel !== model) {
                  if (response.data.choices && response.data.choices[0]?.message) {
                      response.data.choices[0].message.content = 
@@ -88,7 +138,7 @@ export class OpenRouterService {
             console.warn(`Failed with model ${currentModel}: ${errorMsg}`);
             lastError = error;
             
-            // If it's an Auth error (401), don't retry other models, they will all fail.
+            // If it's an Auth error (401), don't retry other models
             if (error.response?.status === 401) {
                 throw error;
             }
