@@ -1,99 +1,121 @@
 # Madlen OpenRouter Monorepo
 
-## Overview
+> A modern, full-stack AI chat interface powered by OpenRouter, built with Next.js 16, Express, and Turbo.
 
-This is a modern full-stack web application designed as a chat interface for OpenRouter. It is built as a monorepo using **Turbo** and **pnpm workspaces**, featuring a **Next.js 16** frontend, an **Express** backend, and shared packages for UI, database, and logic.
+## 🚀 Overview
 
-## Technical Stack & Choices
+This project is a robust, production-ready chat application designed to interact with various LLMs via the [OpenRouter API](https://openrouter.ai/). It features a sleek, responsive UI, multi-modal capabilities (image uploads), full internationalization (English/Turkish), and a microservices architecture managed within a monorepo.
 
--   **Monorepo**: Managed by `pnpm` workspaces and `Turbo` for efficient build caching and task orchestration.
+The goal was not just to build a chat app, but to architect a scalable, maintainable system with a focus on **Developer Experience (DX)**, **User Experience (UX)**, and **Robustness**.
+
+## ✨ Key Features
+
+### Core Functionality
+-   **Multi-Model Chat**: Seamlessly switch between top-tier models (Gemini 2.0, Llama 3.3, Mistral, DeepSeek, etc.).
+-   **Smart Fallback System**: Automatically retries requests with alternative models in the same category (e.g., Reasoning -> Reasoning) if the primary model is rate-limited or unavailable.
+-   **Chat History**: Persisted conversations with support for **Renaming**, **Deleting**, and **Pinning** chats.
+-   **Authentication**: Secure login via **Auth.js v5** (Credentials provider) with database session verification.
+
+### 🌟 Bonus & Advanced Features
+-   **Multi-modal Support**: Upload images to chat with vision-capable models (e.g., GPT-4o Mini, Gemini, Llama 3.2 Vision).
+-   **Internationalization (i18n)**: Full English and Turkish support using `next-intlayer` with automatic locale detection.
+-   **Advanced Model Selector**: Filter models by capability (Coding, Reasoning, Multimodal) with real-time search.
+-   **Observability**: Full **OpenTelemetry** instrumentation for both Frontend (Next.js) and Backend (Express), tracing requests to a local **Jaeger** instance.
+-   **Modern UI/UX**:
+    -   Responsive Sidebar with toggle.
+    -   Dark/Light mode support.
+    -   Markdown rendering with syntax highlighting and "Copy Code" functionality.
+    -   Fluid animations and accessible components (Radix UI).
+
+## 🛠️ Technical Stack & Architecture
+
+This project uses a **Monorepo** structure managed by **Turbo** and **pnpm workspaces**.
+
 -   **Frontend (`apps/web`)**:
-    -   **Next.js 16 (App Router)**: For server-side rendering, routing, and React server components.
-    -   **Tailwind CSS v4**: For utility-first styling with the latest features.
-    -   **next-intlayer**: For internationalization (English/Turkish), keeping content co-located with components.
-    -   **Auth.js (v5)**: For secure authentication using the Credentials provider and Prisma adapter.
-    -   **Playwright**: For End-to-End (E2E) testing.
+    -   **Next.js 16 (App Router)**: Utilizing React Server Components, Server Actions, and the latest routing paradigms.
+    -   **Tailwind CSS v4**: Zero-runtime CSS-in-JS with the latest engine.
+    -   **Shadcn/UI**: Reusable, accessible component primitives.
+    -   **Playwright**: End-to-End testing.
 -   **Backend (`apps/api`)**:
-    -   **Express.js**: For a robust and flexible API server.
-    -   **OpenTelemetry**: For observability and distributed tracing (Jaeger).
+    -   **Express.js**: A separate, robust API service handling business logic and OpenRouter proxying.
+    -   **OpenTelemetry**: Distributed tracing integration.
 -   **Database**:
-    -   **PostgreSQL**: Relational database for persistent storage.
-    -   **Prisma v7**: Type-safe ORM for database interactions.
--   **Shared Packages**:
-    -   `@repo/ui`: Shared UI components (shadcn/ui style).
-    -   `@repo/shared`: Shared Zod schemas and TypeScript utilities.
-    -   `@repo/database`: Shared Prisma client.
-    -   `@repo/testing`: Shared test configurations (Vitest).
+    -   **PostgreSQL**: Relational data store.
+    -   **Prisma v7**: Type-safe ORM with the latest driver adapters.
+-   **Infrastructure**:
+    -   **Docker**: Containerized PostgreSQL and Jaeger services.
 
-## Prerequisites
+## 🚀 Getting Started
 
+### Prerequisites
 -   Node.js 22+
 -   pnpm 10+
 -   Docker & Docker Compose
 
-## Getting Started
+### Installation
 
-1.  **Install Dependencies**:
+1.  **Clone the repository**:
+    ```bash
+    git clone <repo-url>
+    cd madlen-openrouter-monorepo
+    ```
 
+2.  **Install Dependencies**:
     ```bash
     pnpm install
     ```
 
-2.  **Start Infrastructure (PostgreSQL & Jaeger)**:
-
+3.  **Start Infrastructure** (Database & Tracing):
     ```bash
     docker-compose up -d
     ```
 
-3.  **Setup Database**:
+4.  **Setup Environment**:
+    -   Check `.env.example` files in root and apps.
+    -   **Important**: You need an OpenRouter API Key. Add it to `apps/api/.env`.
+    -   A test user is seeded automatically, or you can run: `pnpm exec tsx packages/database/seed.ts` (inside `packages/database`).
 
+5.  **Initialize Database**:
     ```bash
-    # Generate Prisma client
+    # Generate Prisma Client
     pnpm turbo db:generate
 
-    # Push schema to the database (dev mode)
+    # Push schema to DB
     cd packages/database
     npx prisma db push
     ```
 
-4.  **Run Development Server**:
-
+6.  **Run Development Server**:
     ```bash
     pnpm dev
     ```
+    -   **Web App**: [http://localhost:3001](http://localhost:3001)
+    -   **API**: [http://localhost:3000](http://localhost:3000)
+    -   **Jaeger UI**: [http://localhost:16686](http://localhost:16686)
 
-    -   Web: http://localhost:3001
-    -   API: http://localhost:3000
-    -   Jaeger UI: http://localhost:16686
+### 🔑 Default Login
+-   **Email**: `test@example.com`
+-   **Password**: `password123`
 
-## Testing
+## 🧪 Testing
 
--   **Unit & Integration Tests**:
-
+-   **Unit & Integration Tests** (Vitest):
     ```bash
     pnpm turbo test
     ```
-
--   **E2E Tests (Playwright)**:
-
+-   **End-to-End Tests** (Playwright):
     ```bash
     cd apps/web
     npx playwright test
     ```
 
-## Observability
+## 🔍 Observability
 
-The application is instrumented with **OpenTelemetry**. Traces are sent to the local **Jaeger** instance.
-Access the Jaeger UI at [http://localhost:16686](http://localhost:16686) to view traces from both the frontend (Next.js) and backend (Express).
+The application is instrumented with OpenTelemetry.
+1.  Perform actions in the app (Login, Chat, History).
+2.  Open [http://localhost:16686](http://localhost:16686).
+3.  Select `web-app` or `api-service` to view distributed traces and performance bottlenecks.
 
-## Internationalization
-
-This project supports English (default) and Turkish.
-
--   Content is managed via `intlayer`.
--   Locale detection is handled by middleware.
--   Change URL to `/tr` to see the Turkish version (once content is added).
-
-## License
+## 📜 License
 
 MIT License. See [LICENSE](LICENSE) for more details.
