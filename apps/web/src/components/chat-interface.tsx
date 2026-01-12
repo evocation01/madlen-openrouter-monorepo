@@ -38,6 +38,7 @@ import {
     DialogTrigger,
 } from "@repo/ui/components/ui/dialog";
 import { Input } from "@repo/ui/components/ui/input";
+import { ModelSelector } from "@/components/model-selector";
 
 interface MessagePart {
     type: "text" | "image_url";
@@ -50,11 +51,6 @@ interface MessagePart {
 interface Message {
     role: "user" | "assistant" | "system";
     content: string | MessagePart[];
-}
-
-interface Model {
-    id: string;
-    name: string;
 }
 
 interface Conversation {
@@ -117,7 +113,6 @@ export function ChatInterface() {
     const content = useIntlayer("chat");
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
-    const [models, setModels] = useState<Model[]>([]);
     const [history, setHistory] = useState<Conversation[]>([]);
     const [selectedModel, setSelectedModel] = useState(
         "google/gemini-2.0-flash-exp:free"
@@ -135,7 +130,6 @@ export function ChatInterface() {
 
     useEffect(() => {
         if (status === "authenticated") {
-            fetchModels();
             fetchHistory();
         }
     }, [status]);
@@ -146,39 +140,6 @@ export function ChatInterface() {
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-
-    const fetchModels = async () => {
-        try {
-            const freeModels = [
-                {
-                    id: "google/gemini-2.0-flash-exp:free",
-                    name: "Gemini 2.0 Flash (Free)",
-                },
-                {
-                    id: "meta-llama/llama-3.3-70b-instruct:free",
-                    name: "Llama 3.3 70B (Free)",
-                },
-                {
-                    id: "mistralai/devstral-2512:free",
-                    name: "Mistral Devstral 2512 (Free)",
-                },
-                {
-                    id: "xiaomi/mimo-v2-flash:free",
-                    name: "Xiaomi Mimo V2 (Free)",
-                },
-                {
-                    id: "tngtech/deepseek-r1t2-chimera:free",
-                    name: "DeepSeek R1T2 Chimera (Free)",
-                },
-                { id: "qwen/qwen3-coder:free", name: "Qwen 3 Coder (Free)" },
-                { id: "openai/gpt-oss-120b:free", name: "GPT OSS 120B (Free)" },
-                { id: "openai/gpt-oss-20b:free", name: "GPT OSS 20B (Free)" },
-            ];
-            setModels(freeModels);
-        } catch (e) {
-            console.error("Failed to fetch models", e);
-        }
     };
 
     const fetchHistory = async () => {
@@ -544,21 +505,14 @@ export function ChatInterface() {
                             {content.title.value}
                         </h2>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <span className="text-xs font-semibold text-muted-foreground hidden sm:block">
+                    <div className="flex items-center gap-3 w-full max-w-sm justify-end">
+                        <span className="text-xs font-semibold text-muted-foreground hidden sm:block whitespace-nowrap">
                             {content.modelLabel.value}
                         </span>
-                        <select
-                            className="p-2 border rounded-lg text-xs bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all cursor-pointer hover:border-muted-foreground/50 shadow-sm max-w-[150px] md:max-w-xs truncate"
-                            value={selectedModel}
-                            onChange={(e) => setSelectedModel(e.target.value)}
-                        >
-                            {models.map((m) => (
-                                <option key={m.id} value={m.id}>
-                                    {m.name}
-                                </option>
-                            ))}
-                        </select>
+                        <ModelSelector
+                            selectedModelId={selectedModel}
+                            onSelectModel={setSelectedModel}
+                        />
                     </div>
                 </div>
 
