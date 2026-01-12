@@ -22,7 +22,7 @@ app.use(cors({
   credentials: true, // Allow cookies
 }));
 app.use(morgan("dev"));
-app.use(express.json({ limit: '10mb' })); // Increase limit for images
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 
 app.get("/health", (req, res) => {
@@ -131,7 +131,10 @@ app.get("/history", authMiddleware, async (req: any, res: Response) => {
   try {
     const conversations = await prisma.conversation.findMany({
       where: { userId: user.id },
-      orderBy: { updatedAt: "desc" },
+      orderBy: [
+        { isPinned: "desc" },
+        { updatedAt: "desc" }
+      ],
     });
     res.json(conversations);
   } catch (error) {
@@ -161,6 +164,61 @@ app.get("/history/:id", authMiddleware, async (req: any, res: Response) => {
     res.json(conversation);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch conversation" });
+  }
+});
+
+// Patch Conversation (Rename/Pin)
+app.patch("/history/:id", authMiddleware, async (req: any, res: Response) => {
+  const user = req.user;
+  const { id } = req.params;
+  const { title, isPinned } = req.body;
+
+  try {
+    const conversation = await prisma.conversation.findUnique({
+      where: { id },
+    });
+
+    if (!conversation || conversation.userId !== user.id) {
+      res.status(404).json({ error: "Conversation not found" });
+      return;
+    }
+
+    const updated = await prisma.conversation.update({
+      where: { id },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(isPinned !== undefined && { isPinned }),
+      },
+    });
+
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update conversation" });
+  }
+});
+
+// Delete Conversation
+app.delete("/history/:id", authMiddleware, async (req: any, res: Response) => {
+  const user = req.user;
+  const { id } = req.params;
+
+  try {
+    const conversation = await prisma.conversation.findUnique({
+      where: { id },
+    });
+
+    if (!conversation || conversation.userId !== user.id) {
+      res.status(404).json({ error: "Conversation not found" });
+      return;
+    }
+
+    await prisma.conversation.delete({
+      where: { id },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete conversation" });
   }
 });
 

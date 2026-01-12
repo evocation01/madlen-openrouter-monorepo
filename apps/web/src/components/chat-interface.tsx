@@ -10,6 +10,12 @@ import {
     MessageSquare,
     Plus,
     X,
+    MoreVertical,
+    Pin,
+    Trash,
+    Edit,
+    PanelLeftClose,
+    PanelLeftOpen,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useIntlayer } from "next-intlayer";
@@ -18,6 +24,20 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import remarkGfm from "remark-gfm";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@repo/ui/components/ui/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@repo/ui/components/ui/dialog";
+import { Input } from "@repo/ui/components/ui/input";
 
 interface MessagePart {
     type: "text" | "image_url";
@@ -41,6 +61,7 @@ interface Conversation {
     id: string;
     title: string;
     createdAt: string;
+    isPinned?: boolean;
 }
 
 const API_URL = "http://localhost:3000";
@@ -50,12 +71,7 @@ const CodeBlock = ({
     value,
     copyLabel,
     copiedLabel,
-}: {
-    language: string;
-    value: string;
-    copyLabel: string;
-    copiedLabel: string;
-}) => {
+}: { language: string; value: string; copyLabel: string; copiedLabel: string }) => {
     const [copied, setCopied] = useState(false);
 
     const copyToClipboard = () => {
@@ -109,6 +125,10 @@ export function ChatInterface() {
     const [isLoading, setIsLoading] = useState(false);
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+    const [chatToRename, setChatToRename] = useState<Conversation | null>(null);
+    const [newTitle, setNewTitle] = useState("");
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -269,11 +289,62 @@ export function ChatInterface() {
         }
     };
 
+    const handlePin = async (chat: Conversation, e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            await fetch(`${API_URL}/history/${chat.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ isPinned: !chat.isPinned }),
+            });
+            fetchHistory();
+        } catch (e) {
+            console.error("Failed to pin chat", e);
+        }
+    };
+
+    const handleDelete = async (chatId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm("Are you sure you want to delete this chat?")) return;
+        try {
+            await fetch(`${API_URL}/history/${chatId}`, {
+                method: "DELETE",
+                credentials: "include",
+            });
+            if (conversationId === chatId) handleNewChat();
+            fetchHistory();
+        } catch (e) {
+            console.error("Failed to delete chat", e);
+        }
+    };
+
+    const openRenameDialog = (chat: Conversation, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setChatToRename(chat);
+        setNewTitle(chat.title || "");
+        setIsRenameDialogOpen(true);
+    };
+
+    const handleRename = async () => {
+        if (!chatToRename) return;
+        try {
+            await fetch(`${API_URL}/history/${chatToRename.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ title: newTitle }),
+            });
+            fetchHistory();
+            setIsRenameDialogOpen(false);
+        } catch (e) {
+            console.error("Failed to rename chat", e);
+        }
+    };
+
     const MarkdownRenderer = ({
         content: textContent,
-    }: {
-        content: string;
-    }) => {
+    }: { content: string }) => {
         return (
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -354,66 +425,125 @@ export function ChatInterface() {
         );
     };
 
+    const pinnedChats = history.filter((c) => c.isPinned);
+    const recentChats = history.filter((c) => !c.isPinned);
+
     if (status === "loading")
         return <div className="p-8 text-center">{content.loading.value}</div>;
 
     return (
         <div className="flex h-full w-full gap-4 min-h-0">
-            {/* Sidebar - Hidden on mobile */}
-            <div className="hidden md:flex w-64 flex-col gap-2 border rounded-xl p-3 bg-muted/30 backdrop-blur-sm min-h-0">
-                <Button
-                    variant="outline"
-                    className="w-full justify-start gap-2 mb-2 bg-background shadow-sm shrink-0"
-                    onClick={handleNewChat}
-                >
-                    <Plus className="w-4 h-4" />
-                    {content.newChatButton.value}
-                </Button>
+            {/* Sidebar */}
+            {isSidebarOpen && (
+                <div className="hidden md:flex w-64 flex-col gap-2 border rounded-xl p-3 bg-muted/30 backdrop-blur-sm min-h-0 shrink-0">
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            className="flex-1 justify-start gap-2 bg-background shadow-sm"
+                            onClick={handleNewChat}
+                        >
+                            <Plus className="w-4 h-4" />
+                            {content.newChatButton.value}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsSidebarOpen(false)}
+                            title="Close Sidebar"
+                        >
+                            <PanelLeftClose className="w-4 h-4" />
+                        </Button>
+                    </div>
 
-                <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-muted-foreground uppercase tracking-widest shrink-0">
-                    <History className="w-3 h-3" />
-                    {content.historyTitle.value}
-                </div>
+                    <div className="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar min-h-0">
+                        {/* Pinned Section */}
+                        {pinnedChats.length > 0 && (
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-muted-foreground uppercase tracking-widest shrink-0">
+                                    <Pin className="w-3 h-3" />
+                                    {content.sections.pinned.value}
+                                </div>
+                                {pinnedChats.map((chat) => (
+                                    <ChatListItem 
+                                        key={chat.id} 
+                                        chat={chat} 
+                                        isActive={conversationId === chat.id}
+                                        onClick={() => loadConversation(chat.id)}
+                                        onPin={handlePin}
+                                        onRename={openRenameDialog}
+                                        onDelete={handleDelete}
+                                        content={content}
+                                    />
+                                ))}
+                            </div>
+                        )}
 
-                <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar min-h-0">
-                    {history.length === 0 ? (
-                        <div className="text-xs text-center text-muted-foreground p-4">
-                            {content.noHistory.value}
+                        {/* Recent Section */}
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2 px-2 py-1 text-xs font-bold text-muted-foreground uppercase tracking-widest shrink-0">
+                                <History className="w-3 h-3" />
+                                {content.sections.recent.value}
+                            </div>
+                            {recentChats.length === 0 && pinnedChats.length === 0 ? (
+                                <div className="text-xs text-center text-muted-foreground p-4">
+                                    {content.noHistory.value}
+                                </div>
+                            ) : (
+                                recentChats.map((chat) => (
+                                    <ChatListItem 
+                                        key={chat.id} 
+                                        chat={chat} 
+                                        isActive={conversationId === chat.id}
+                                        onClick={() => loadConversation(chat.id)}
+                                        onPin={handlePin}
+                                        onRename={openRenameDialog}
+                                        onDelete={handleDelete}
+                                        content={content}
+                                    />
+                                ))
+                            )}
                         </div>
-                    ) : (
-                        history.map((chat) => (
-                            <button
-                                key={chat.id}
-                                onClick={() => loadConversation(chat.id)}
-                                className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all hover:bg-accent hover:text-accent-foreground flex items-center gap-2 truncate group ${
-                                    conversationId === chat.id
-                                        ? "bg-accent text-accent-foreground shadow-sm font-medium"
-                                        : "text-muted-foreground"
-                                }`}
-                            >
-                                <MessageSquare
-                                    className={`w-4 h-4 shrink-0 transition-opacity ${
-                                        conversationId === chat.id
-                                            ? "opacity-100"
-                                            : "opacity-50 group-hover:opacity-100"
-                                    }`}
-                                />
-                                <span className="truncate">
-                                    {chat.title || content.untitledChat.value}
-                                </span>
-                            </button>
-                        ))
-                    )}
+                    </div>
                 </div>
-            </div>
+            )}
+
+            {/* Rename Dialog */}
+            <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{content.menu.rename.value}</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <Input
+                            value={newTitle}
+                            onChange={(e) => setNewTitle(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+                        />
+                        <Button onClick={handleRename}>Save</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Main Chat Area */}
             <div className="flex-1 flex flex-col border rounded-xl shadow-md bg-card overflow-hidden min-h-0">
                 {/* Header */}
                 <div className="flex justify-between items-center px-6 py-4 border-b bg-card/50 backdrop-blur-md shrink-0">
-                    <h2 className="font-bold text-base md:text-lg">
-                        {content.title.value}
-                    </h2>
+                    <div className="flex items-center gap-3">
+                        {!isSidebarOpen && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsSidebarOpen(true)}
+                                title="Open Sidebar"
+                                className="mr-2"
+                            >
+                                <PanelLeftOpen className="w-4 h-4" />
+                            </Button>
+                        )}
+                        <h2 className="font-bold text-base md:text-lg">
+                            {content.title.value}
+                        </h2>
+                    </div>
                     <div className="flex items-center gap-3">
                         <span className="text-xs font-semibold text-muted-foreground hidden sm:block">
                             {content.modelLabel.value}
@@ -445,20 +575,10 @@ export function ChatInterface() {
                     {messages.map((msg, idx) => (
                         <div
                             key={idx}
-                            className={`flex ${
-                                msg.role === "user"
-                                    ? "justify-end"
-                                    : "justify-start"
-                            }`}
+                            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                         >
                             <div
-                                className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm shadow-sm ${
-                                    msg.role === "user"
-                                        ? "bg-primary text-primary-foreground rounded-tr-none"
-                                        : msg.role === "system"
-                                        ? "bg-destructive/10 text-destructive text-center w-full shadow-none border border-destructive/20"
-                                        : "bg-muted text-foreground rounded-tl-none"
-                                }`}
+                                className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm shadow-sm ${msg.role === "user" ? "bg-primary text-primary-foreground rounded-tr-none" : msg.role === "system" ? "bg-destructive/10 text-destructive text-center w-full shadow-none border border-destructive/20" : "bg-muted text-foreground rounded-tl-none"}`}
                             >
                                 {msg.role !== "user" &&
                                     msg.role !== "system" && (
@@ -559,6 +679,55 @@ export function ChatInterface() {
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function ChatListItem({
+    chat,
+    isActive,
+    onClick,
+    onPin,
+    onRename,
+    onDelete,
+    content
+}: any) {
+    return (
+        <div className="group relative flex items-center">
+            <button
+                onClick={onClick}
+                className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all hover:bg-accent hover:text-accent-foreground flex items-center gap-2 truncate ${isActive ? "bg-accent text-accent-foreground shadow-sm font-medium" : "text-muted-foreground"}`}
+            >
+                <MessageSquare
+                    className={`w-4 h-4 shrink-0 transition-opacity ${isActive ? "opacity-100" : "opacity-50 group-hover:opacity-100"}`}
+                />
+                <span className="truncate flex-1 pr-6">
+                    {chat.title || content.untitledChat.value}
+                </span>
+            </button>
+            <div className="absolute right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 p-0 hover:bg-background">
+                            <MoreVertical className="h-3 w-3" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={(e) => onRename(chat, e)}>
+                            <Edit className="mr-2 h-3.5 w-3.5" />
+                            {content.menu.rename.value}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => onPin(chat, e)}>
+                            <Pin className="mr-2 h-3.5 w-3.5" />
+                            {chat.isPinned ? content.menu.unpin.value : content.menu.pin.value}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => onDelete(chat.id, e)} className="text-destructive focus:text-destructive">
+                            <Trash className="mr-2 h-3.5 w-3.5" />
+                            {content.menu.delete.value}
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </div>
     );
