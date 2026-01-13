@@ -8,15 +8,19 @@ This project is a robust, production-ready chat application designed to interact
 
 The goal was not just to build a chat app, but to architect a scalable, maintainable system with a focus on **Developer Experience (DX)**, **User Experience (UX)**, and **Robustness**.
 
+![the chat interface with history](image.png)
+
 ## ✨ Key Features
 
 ### Core Functionality
+
 -   **Multi-Model Chat**: Seamlessly switch between top-tier models (Gemini 2.0, Llama 3.3, Mistral, DeepSeek, etc.).
 -   **Smart Fallback System**: Automatically retries requests with alternative models in the same category (e.g., Reasoning -> Reasoning) if the primary model is rate-limited or unavailable.
 -   **Chat History**: Persisted conversations with support for **Renaming**, **Deleting**, and **Pinning** chats.
 -   **Authentication**: Secure login via **Auth.js v5** (Credentials provider) with database session verification.
 
 ### 🌟 Bonus & Advanced Features
+
 -   **Multi-modal Support**: Upload images to chat with vision-capable models (e.g., GPT-4o Mini, Gemini, Llama 3.2 Vision).
 -   **Internationalization (i18n)**: Full English and Turkish support using `next-intlayer` with automatic locale detection.
 -   **Advanced Model Selector**: Filter models by capability (Coding, Reasoning, Multimodal) with real-time search.
@@ -48,6 +52,7 @@ This project uses a **Monorepo** structure managed by **Turbo** and **pnpm works
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 -   Node.js 22+
 -   pnpm 10+
 -   Docker & Docker Compose
@@ -55,27 +60,32 @@ This project uses a **Monorepo** structure managed by **Turbo** and **pnpm works
 ### Installation
 
 1.  **Clone the repository**:
+
     ```bash
     git clone <repo-url>
     cd madlen-openrouter-monorepo
     ```
 
 2.  **Install Dependencies**:
+
     ```bash
     pnpm install
     ```
 
 3.  **Start Infrastructure** (Database & Tracing):
+
     ```bash
     docker-compose up -d
     ```
 
 4.  **Setup Environment**:
+
     -   Check `.env.example` files in root and apps.
     -   **Important**: You need an OpenRouter API Key. Add it to `apps/api/.env`.
     -   A test user is seeded automatically, or you can run: `pnpm exec tsx packages/database/seed.ts` (inside `packages/database`).
 
 5.  **Initialize Database**:
+
     ```bash
     # Generate Prisma Client
     pnpm turbo db:generate
@@ -94,6 +104,7 @@ This project uses a **Monorepo** structure managed by **Turbo** and **pnpm works
     -   **Jaeger UI**: [http://localhost:16686](http://localhost:16686)
 
 ### 🔑 Default Login
+
 -   **Email**: `test@example.com`
 -   **Password**: `password123`
 
@@ -112,6 +123,7 @@ This project uses a **Monorepo** structure managed by **Turbo** and **pnpm works
 ## 🔍 Observability
 
 The application is instrumented with OpenTelemetry.
+
 1.  Perform actions in the app (Login, Chat, History).
 2.  Open [http://localhost:16686](http://localhost:16686).
 3.  Select `web-app` or `api-service` to view distributed traces and performance bottlenecks.
