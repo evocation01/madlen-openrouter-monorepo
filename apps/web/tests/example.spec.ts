@@ -1,13 +1,13 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test("has title", async ({ page }) => {
-  await page.goto("/");
+    await page.goto("/");
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Create Next App/);
+    // Expect a title "to contain" a substring.
+    await expect(page).toHaveTitle(/Create Next App/);
 });
 
 test("renders button from ui package", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.getByRole("button", { name: "Click me" })).toBeVisible();
+    await page.goto("/");
+    await expect(page.getByRole("button", { name: "Click me" })).toBeVisible();
 });

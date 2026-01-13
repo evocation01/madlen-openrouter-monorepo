@@ -53,11 +53,14 @@ export function LandingPage() {
                                     {content.getStarted.value}
                                 </Button>
                             </DialogTrigger>
-                                          <DialogContent className="sm:max-w-[425px]">
-                                            <DialogHeader>
-                                              <DialogTitle>{content.loginModalTitle.value}</DialogTitle>
-                                            </DialogHeader>
-                                            <LoginForm onSuccess={() => {
+                            <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        {content.loginModalTitle.value}
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <LoginForm
+                                    onSuccess={() => {
                                         setIsLoginOpen(false);
                                         router.refresh();
                                     }}

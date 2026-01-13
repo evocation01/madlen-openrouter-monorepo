@@ -1,21 +1,35 @@
 "use client";
 
+import { ModelSelector } from "@/components/model-selector";
 import { Button } from "@repo/ui/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@repo/ui/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@repo/ui/components/ui/dropdown-menu";
+import { Input } from "@repo/ui/components/ui/input";
 import { Textarea } from "@repo/ui/components/ui/textarea";
 import {
     Check,
     Copy,
+    Edit,
     History,
     ImageIcon,
     MessageSquare,
-    Plus,
-    X,
     MoreVertical,
-    Pin,
-    Trash,
-    Edit,
     PanelLeftClose,
     PanelLeftOpen,
+    Pin,
+    Plus,
+    Trash,
+    X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useIntlayer } from "next-intlayer";
@@ -24,21 +38,6 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import remarkGfm from "remark-gfm";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@repo/ui/components/ui/dropdown-menu";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@repo/ui/components/ui/dialog";
-import { Input } from "@repo/ui/components/ui/input";
-import { ModelSelector } from "@/components/model-selector";
 
 interface MessagePart {
     type: "text" | "image_url";
@@ -67,7 +66,12 @@ const CodeBlock = ({
     value,
     copyLabel,
     copiedLabel,
-}: { language: string; value: string; copyLabel: string; copiedLabel: string }) => {
+}: {
+    language: string;
+    value: string;
+    copyLabel: string;
+    copiedLabel: string;
+}) => {
     const [copied, setCopied] = useState(false);
 
     const copyToClipboard = () => {
@@ -305,7 +309,9 @@ export function ChatInterface() {
 
     const MarkdownRenderer = ({
         content: textContent,
-    }: { content: string }) => {
+    }: {
+        content: string;
+    }) => {
         return (
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -425,11 +431,13 @@ export function ChatInterface() {
                                     {content.sections.pinned.value}
                                 </div>
                                 {pinnedChats.map((chat) => (
-                                    <ChatListItem 
-                                        key={chat.id} 
-                                        chat={chat} 
+                                    <ChatListItem
+                                        key={chat.id}
+                                        chat={chat}
                                         isActive={conversationId === chat.id}
-                                        onClick={() => loadConversation(chat.id)}
+                                        onClick={() =>
+                                            loadConversation(chat.id)
+                                        }
                                         onPin={handlePin}
                                         onRename={openRenameDialog}
                                         onDelete={handleDelete}
@@ -445,17 +453,20 @@ export function ChatInterface() {
                                 <History className="w-3 h-3" />
                                 {content.sections.recent.value}
                             </div>
-                            {recentChats.length === 0 && pinnedChats.length === 0 ? (
+                            {recentChats.length === 0 &&
+                            pinnedChats.length === 0 ? (
                                 <div className="text-xs text-center text-muted-foreground p-4">
                                     {content.noHistory.value}
                                 </div>
                             ) : (
                                 recentChats.map((chat) => (
-                                    <ChatListItem 
-                                        key={chat.id} 
-                                        chat={chat} 
+                                    <ChatListItem
+                                        key={chat.id}
+                                        chat={chat}
                                         isActive={conversationId === chat.id}
-                                        onClick={() => loadConversation(chat.id)}
+                                        onClick={() =>
+                                            loadConversation(chat.id)
+                                        }
                                         onPin={handlePin}
                                         onRename={openRenameDialog}
                                         onDelete={handleDelete}
@@ -469,7 +480,10 @@ export function ChatInterface() {
             )}
 
             {/* Rename Dialog */}
-            <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
+            <Dialog
+                open={isRenameDialogOpen}
+                onOpenChange={setIsRenameDialogOpen}
+            >
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>{content.menu.rename.value}</DialogTitle>
@@ -478,7 +492,9 @@ export function ChatInterface() {
                         <Input
                             value={newTitle}
                             onChange={(e) => setNewTitle(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+                            onKeyDown={(e) =>
+                                e.key === "Enter" && handleRename()
+                            }
                         />
                         <Button onClick={handleRename}>Save</Button>
                     </div>
@@ -529,10 +545,20 @@ export function ChatInterface() {
                     {messages.map((msg, idx) => (
                         <div
                             key={idx}
-                            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                            className={`flex ${
+                                msg.role === "user"
+                                    ? "justify-end"
+                                    : "justify-start"
+                            }`}
                         >
                             <div
-                                className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm shadow-sm ${msg.role === "user" ? "bg-primary text-primary-foreground rounded-tr-none" : msg.role === "system" ? "bg-destructive/10 text-destructive text-center w-full shadow-none border border-destructive/20" : "bg-muted text-foreground rounded-tl-none"}`}
+                                className={`max-w-[85%] rounded-2xl px-5 py-3 text-sm shadow-sm ${
+                                    msg.role === "user"
+                                        ? "bg-primary text-primary-foreground rounded-tr-none"
+                                        : msg.role === "system"
+                                        ? "bg-destructive/10 text-destructive text-center w-full shadow-none border border-destructive/20"
+                                        : "bg-muted text-foreground rounded-tl-none"
+                                }`}
                             >
                                 {msg.role !== "user" &&
                                     msg.role !== "system" && (
@@ -645,16 +671,24 @@ function ChatListItem({
     onPin,
     onRename,
     onDelete,
-    content
+    content,
 }: any) {
     return (
         <div className="group relative flex items-center">
             <button
                 onClick={onClick}
-                className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all hover:bg-accent hover:text-accent-foreground flex items-center gap-2 truncate ${isActive ? "bg-accent text-accent-foreground shadow-sm font-medium" : "text-muted-foreground"}`}
+                className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all hover:bg-accent hover:text-accent-foreground flex items-center gap-2 truncate ${
+                    isActive
+                        ? "bg-accent text-accent-foreground shadow-sm font-medium"
+                        : "text-muted-foreground"
+                }`}
             >
                 <MessageSquare
-                    className={`w-4 h-4 shrink-0 transition-opacity ${isActive ? "opacity-100" : "opacity-50 group-hover:opacity-100"}`}
+                    className={`w-4 h-4 shrink-0 transition-opacity ${
+                        isActive
+                            ? "opacity-100"
+                            : "opacity-50 group-hover:opacity-100"
+                    }`}
                 />
                 <span className="truncate flex-1 pr-6">
                     {chat.title || content.untitledChat.value}
@@ -663,7 +697,11 @@ function ChatListItem({
             <div className="absolute right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 p-0 hover:bg-background">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 p-0 hover:bg-background"
+                        >
                             <MoreVertical className="h-3 w-3" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -674,9 +712,14 @@ function ChatListItem({
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => onPin(chat, e)}>
                             <Pin className="mr-2 h-3.5 w-3.5" />
-                            {chat.isPinned ? content.menu.unpin.value : content.menu.pin.value}
+                            {chat.isPinned
+                                ? content.menu.unpin.value
+                                : content.menu.pin.value}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => onDelete(chat.id, e)} className="text-destructive focus:text-destructive">
+                        <DropdownMenuItem
+                            onClick={(e) => onDelete(chat.id, e)}
+                            className="text-destructive focus:text-destructive"
+                        >
                             <Trash className="mr-2 h-3.5 w-3.5" />
                             {content.menu.delete.value}
                         </DropdownMenuItem>
